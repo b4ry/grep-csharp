@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-
 static bool MatchPattern(string inputLine, string pattern)
 {
     if (pattern.Length == 1)
