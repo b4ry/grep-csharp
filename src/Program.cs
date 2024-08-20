@@ -1,14 +1,4 @@
-static bool MatchPattern(string inputLine, string pattern)
-{
-    if (pattern.Length == 1)
-    {
-        return inputLine.Contains(pattern);
-    }
-    else
-    {
-        throw new ArgumentException($"Unhandled pattern: {pattern}");
-    }
-}
+using codecrafters_grep.src;
 
 if (args[0] != "-E")
 {
@@ -22,7 +12,7 @@ string inputLine = Console.In.ReadToEnd();
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 Console.WriteLine("Logs from your program will appear here!");
 
-if (MatchPattern(inputLine, pattern))
+if (Patterns.MatchPattern(inputLine, pattern))
 {
     Environment.Exit(0);
 }
