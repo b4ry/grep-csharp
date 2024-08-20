@@ -2,9 +2,15 @@
 {
     internal static class Patterns
     {
-        private static readonly Dictionary<string, Func<string, bool>> _patterns = new() {
-            { 
-                "\\d", (inputLine) =>
+        private static readonly Dictionary<string, Func<string, string, bool>> _patterns = new() {
+            {
+                "contains", (inputLine, pattern) =>
+                {
+                    return inputLine.Contains(pattern);
+                }
+            },
+            {
+                "\\d", (inputLine, pattern) =>
                 {
                     foreach(char c in inputLine)
                     {
@@ -18,7 +24,7 @@
                 }
             },
             {
-                "\\w", (inputLine) =>
+                "\\w", (inputLine, pattern) =>
                 {
                     foreach(char c in inputLine)
                     {
@@ -30,6 +36,19 @@
                     
                     return false;
                 }
+            },
+            {
+                "[]", (inputLine, pattern) =>
+                {
+                    var patternChars = pattern[1..^1];
+
+                    foreach(char c in patternChars)
+                    {
+                        return inputLine.Contains(c);
+                    }
+
+                    return false;
+                }
             }
         };
 
@@ -37,11 +56,15 @@
         {
             if (inputPattern.Length == 1)
             {
-                return inputLine.Contains(inputPattern);
+                return _patterns["contains"](inputLine, inputPattern);
             }
-            else if (_patterns.TryGetValue(inputPattern, out Func<string, bool>? pattern))
+            else if(inputPattern.StartsWith('[') && inputPattern.EndsWith(']'))
             {
-                return pattern(inputLine);
+                return _patterns["[]"](inputLine, inputPattern);
+            }
+            else if (_patterns.TryGetValue(inputPattern, out Func<string, string, bool>? pattern))
+            {
+                return pattern(inputLine, inputPattern);
             }
             else
             {
