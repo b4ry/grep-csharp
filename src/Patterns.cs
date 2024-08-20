@@ -7,7 +7,7 @@
                 {
                     foreach(char c in inputLine)
                     {
-                        if(IsASCIIDigit(c))
+                        if(char.IsAsciiDigit(c))
                         {
                             return true;
                         }
@@ -32,11 +32,6 @@
             {
                 throw new ArgumentException($"Unhandled pattern: {inputPattern}");
             }
-        }
-
-        private static bool IsASCIIDigit(char c)
-        {
-            return c > 47 && c < 58;
         }
     }
 }
