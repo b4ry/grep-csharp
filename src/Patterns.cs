@@ -3,7 +3,8 @@
     internal static class Patterns
     {
         private static readonly Dictionary<string, Func<string, bool>> _patterns = new() {
-            { "\\d", (inputLine) =>
+            { 
+                "\\d", (inputLine) =>
                 {
                     foreach(char c in inputLine)
                     {
@@ -13,6 +14,20 @@
                         }
                     }
 
+                    return false;
+                }
+            },
+            {
+                "\\w", (inputLine) =>
+                {
+                    foreach(char c in inputLine)
+                    {
+                        if(char.IsAsciiDigit(c) || char.IsAsciiLetter(c) || c == '_')
+                        {
+                            return true;
+                        }
+                    }
+                    
                     return false;
                 }
             }
