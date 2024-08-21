@@ -43,14 +43,30 @@
             {
                 _characterGroupsPattern, (inputLine, pattern) =>
                 {
-                    var patternChars = pattern[1..^1];
+                    string patternChars = string.Empty;
+                    bool isNegative = pattern[1] == '^';
+
+                    patternChars = isNegative ? pattern[2..^1] : pattern[1..^1];
 
                     foreach(char c in patternChars)
                     {
-                        return inputLine.Contains(c);
+                        if(isNegative)
+                        {
+                            if(inputLine.Contains(c))
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            if(inputLine.Contains(c))
+                            {
+                                return true;
+                            }
+                        }
                     }
 
-                    return false;
+                    return isNegative;
                 }
             }
         };
