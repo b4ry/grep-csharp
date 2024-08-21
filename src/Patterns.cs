@@ -67,8 +67,17 @@ namespace codecrafters_grep.src
             {
                 if (pattern[i] == '\\')
                 {
-                    _patternChunks.Add(pattern.Substring(i, 2));
-                    i++;
+                    int nextIndex = i + 1;
+
+                    if (nextIndex < pattern.Length && (pattern[nextIndex] == 'd' || pattern[nextIndex] == 'w'))
+                    {
+                        _patternChunks.Add(pattern.Substring(i, 2));
+                        i++;
+                    }
+                    else
+                    {
+                        _patternChunks.Add(pattern[i].ToString());
+                    }
                 }
                 else if (pattern[i] == '[')
                 {
