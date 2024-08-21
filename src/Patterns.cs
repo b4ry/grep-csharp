@@ -123,6 +123,11 @@ namespace codecrafters_grep.src
                 if(matches)
                 {
                     patternChunksIndex++;
+
+                    if(patternChunksIndex == _patternChunks.Count)
+                    {
+                        return true;
+                    }
                 }
                 else
                 {
@@ -131,7 +136,7 @@ namespace codecrafters_grep.src
                 }
             }
 
-            return patternChunksIndex == _patternChunks.Count;
+            return false;
         }
     }
 }
