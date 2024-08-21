@@ -1,47 +1,35 @@
-﻿namespace codecrafters_grep.src
+﻿using System.Text;
+
+namespace codecrafters_grep.src
 {
     internal static class Patterns
     {
         private const string _containsPattern = "contains";
         private const string _characterGroupsPattern = "[]";
 
-        private static readonly Dictionary<string, Func<string, string, bool>> _patterns = new() {
-            {
-                _containsPattern, (inputLine, pattern) =>
-                {
-                    return inputLine.Contains(pattern);
-                }
-            },
-            {
-                "\\d", (inputLine, pattern) =>
-                {
-                    foreach(char c in inputLine)
-                    {
-                        if(char.IsAsciiDigit(c))
-                        {
-                            return true;
-                        }
-                    }
+        private static List<string> _patternChunks = [];
 
-                    return false;
-                }
-            },
+        private static readonly Dictionary<string, Func<char, string, bool>> _patterns = new() {
             {
-                "\\w", (inputLine, pattern) =>
+                _containsPattern, (character, pattern) =>
                 {
-                    foreach(char c in inputLine)
-                    {
-                        if(char.IsAsciiDigit(c) || char.IsAsciiLetter(c) || c == '_')
-                        {
-                            return true;
-                        }
-                    }
-                    
-                    return false;
+                    return pattern.Contains(character);
                 }
             },
             {
-                _characterGroupsPattern, (inputLine, pattern) =>
+                "\\d", (character, pattern) =>
+                {
+                    return char.IsAsciiDigit(character);
+                }
+            },
+            {
+                "\\w", (character, pattern) =>
+                {
+                    return (char.IsAsciiDigit(character) || char.IsAsciiLetter(character) || character == '_');
+                }
+            },
+            {
+                _characterGroupsPattern, (character, pattern) =>
                 {
                     string patternChars = string.Empty;
                     bool isNegative = pattern[1] == '^';
@@ -52,14 +40,14 @@
                     {
                         if(isNegative)
                         {
-                            if(inputLine.Contains(c))
+                            if(character.Equals(c))
                             {
                                 return false;
                             }
                         }
                         else
                         {
-                            if(inputLine.Contains(c))
+                            if(character.Equals(c))
                             {
                                 return true;
                             }
@@ -71,24 +59,79 @@
             }
         };
 
-        internal static bool MatchPattern(string inputLine, string inputPattern)
+        internal static void BuildPatternChunks(string pattern)
         {
-            if (inputPattern.Length == 1)
+            StringBuilder characterGroup = new();
+
+            for (int i = 0; i < pattern.Length; i++)
             {
-                return _patterns[_containsPattern](inputLine, inputPattern);
+                if (pattern[i] == '\\')
+                {
+                    _patternChunks.Add(pattern.Substring(i, 2));
+                    i++;
+                }
+                else if (pattern[i] == '[')
+                {
+                    characterGroup.Append(pattern[i]);
+                }
+                else if (pattern[i] == ']')
+                {
+                    characterGroup.Append(pattern[i]);
+                    _patternChunks.Add(characterGroup.ToString());
+                    characterGroup.Clear();
+                }
+                else
+                {
+                    if (characterGroup.Length > 0)
+                    {
+                        characterGroup.Append(pattern[i]);
+                    }
+                    else
+                    {
+                        _patternChunks.Add(pattern[i].ToString());
+                    }
+                }
             }
-            else if(inputPattern.StartsWith('[') && inputPattern.EndsWith(']'))
+        }
+
+        internal static bool MatchPattern(string inputLine)
+        {
+            int patternChunksIndex = 0;
+            bool matches = false;
+
+            foreach (char c in inputLine)
             {
-                return _patterns[_characterGroupsPattern](inputLine, inputPattern);
+                var inputPattern = _patternChunks[patternChunksIndex];
+
+                if (inputPattern.Length == 1)
+                {
+                    matches = _patterns[_containsPattern](c, inputPattern);
+                }
+                else if (inputPattern.StartsWith('[') && inputPattern.EndsWith(']'))
+                {
+                    matches = _patterns[_characterGroupsPattern](c, inputPattern);
+                }
+                else if (_patterns.TryGetValue(inputPattern, out Func<char, string, bool>? pattern))
+                {
+                    matches = pattern(c, inputPattern);
+                }
+                else
+                {
+                    throw new ArgumentException($"Unhandled pattern: {inputPattern}");
+                }
+
+                if(matches)
+                {
+                    patternChunksIndex++;
+                }
+                else
+                {
+                    patternChunksIndex = 0;
+                    matches = false;
+                }
             }
-            else if (_patterns.TryGetValue(inputPattern, out Func<string, string, bool>? pattern))
-            {
-                return pattern(inputLine, inputPattern);
-            }
-            else
-            {
-                throw new ArgumentException($"Unhandled pattern: {inputPattern}");
-            }
+
+            return patternChunksIndex == _patternChunks.Count;
         }
     }
 }

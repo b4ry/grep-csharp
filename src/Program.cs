@@ -12,7 +12,9 @@ string inputLine = Console.In.ReadToEnd();
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 Console.WriteLine("Logs from your program will appear here!");
 
-if (Patterns.MatchPattern(inputLine, pattern))
+Patterns.BuildPatternChunks(pattern);
+
+if (Patterns.MatchPattern(inputLine))
 {
     Environment.Exit(0);
 }
