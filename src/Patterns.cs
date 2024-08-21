@@ -2,9 +2,12 @@
 {
     internal static class Patterns
     {
+        private const string _containsPattern = "contains";
+        private const string _characterGroupsPattern = "[]";
+
         private static readonly Dictionary<string, Func<string, string, bool>> _patterns = new() {
             {
-                "contains", (inputLine, pattern) =>
+                _containsPattern, (inputLine, pattern) =>
                 {
                     return inputLine.Contains(pattern);
                 }
@@ -38,7 +41,7 @@
                 }
             },
             {
-                "[]", (inputLine, pattern) =>
+                _characterGroupsPattern, (inputLine, pattern) =>
                 {
                     var patternChars = pattern[1..^1];
 
@@ -56,11 +59,11 @@
         {
             if (inputPattern.Length == 1)
             {
-                return _patterns["contains"](inputLine, inputPattern);
+                return _patterns[_containsPattern](inputLine, inputPattern);
             }
             else if(inputPattern.StartsWith('[') && inputPattern.EndsWith(']'))
             {
-                return _patterns["[]"](inputLine, inputPattern);
+                return _patterns[_characterGroupsPattern](inputLine, inputPattern);
             }
             else if (_patterns.TryGetValue(inputPattern, out Func<string, string, bool>? pattern))
             {
