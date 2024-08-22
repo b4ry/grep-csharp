@@ -2,12 +2,14 @@
 
 namespace codecrafters_grep.src
 {
-    internal static class Patterns
+    internal static class Pattern
     {
         private const string _containsPattern = "contains";
         private const string _characterGroupsPattern = "[]";
 
-        private static List<string> _patternChunks = [];
+        private readonly static List<string> _patternChunks = [];
+
+        private static bool _startAnchor = false;
 
         private static readonly Dictionary<string, Func<char, string, bool>> _patterns = new() {
             {
@@ -63,7 +65,12 @@ namespace codecrafters_grep.src
         {
             StringBuilder characterGroup = new();
 
-            for (int i = 0; i < pattern.Length; i++)
+            if (pattern[0] == '^')
+            {
+                _startAnchor = true;
+            }
+
+            for (int i = _startAnchor ? 1 : 0; i < pattern.Length; i++)
             {
                 if (pattern[i] == '\\')
                 {
@@ -120,32 +127,45 @@ namespace codecrafters_grep.src
                 {
                     matches = _patterns[_characterGroupsPattern](c, inputPattern);
                 }
-                else if (_patterns.TryGetValue(inputPattern, out Func<char, string, bool>? pattern))
-                {
-                    matches = pattern(c, inputPattern);
-                }
                 else
                 {
-                    throw new ArgumentException($"Unhandled pattern: {inputPattern}");
+                    if (RetrievePattern(inputPattern, out Func<char, string, bool>? pattern))
+                    {
+                        matches = pattern!(c, inputPattern);
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Unhandled pattern: {inputPattern}");
+                    }
                 }
 
-                if(matches)
+                if (matches)
                 {
                     patternChunksIndex++;
 
-                    if(patternChunksIndex == _patternChunks.Count)
+                    if (patternChunksIndex == _patternChunks.Count)
                     {
                         return true;
                     }
                 }
                 else
                 {
+                    if (_startAnchor)
+                    {
+                        return false;
+                    }
+
                     patternChunksIndex = 0;
                     matches = false;
                 }
             }
 
             return false;
+        }
+
+        private static bool RetrievePattern(string inputPattern, out Func<char, string, bool>? pattern)
+        {
+            return _patterns.TryGetValue(inputPattern, out pattern);
         }
     }
 }
