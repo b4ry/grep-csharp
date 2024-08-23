@@ -10,6 +10,7 @@ namespace codecrafters_grep.src
         private readonly static List<string> _patternChunks = [];
 
         private static bool _startAnchor = false;
+        private static bool _endAnchor = false;
 
         private static readonly Dictionary<string, Func<char, string, bool>> _patterns = new() {
             {
@@ -70,7 +71,14 @@ namespace codecrafters_grep.src
                 _startAnchor = true;
             }
 
-            for (int i = _startAnchor ? 1 : 0; i < pattern.Length; i++)
+            if (pattern[^1] == '$')
+            {
+                _endAnchor = true;
+            }
+
+            var lastIndex = _endAnchor ? pattern.Length - 1 : pattern.Length;
+
+            for (int i = _startAnchor ? 1 : 0; i < lastIndex; i++)
             {
                 if (pattern[i] == '\\')
                 {
@@ -115,8 +123,9 @@ namespace codecrafters_grep.src
             int patternChunksIndex = 0;
             bool matches = false;
 
-            foreach (char c in inputLine)
+            for (var i = _endAnchor ? (inputLine.Length - _patternChunks.Count) : 0; i < inputLine.Length; i++)
             {
+                var c = inputLine[i];
                 var inputPattern = _patternChunks[patternChunksIndex];
 
                 if (inputPattern.Length == 1)
@@ -144,7 +153,7 @@ namespace codecrafters_grep.src
                     patternChunksIndex++;
 
                     if (patternChunksIndex == _patternChunks.Count)
-                    {
+                    { 
                         return true;
                     }
                 }
