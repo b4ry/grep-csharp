@@ -9,7 +9,7 @@
             BuildTrie(inputLine);
         }
 
-        internal void BuildTrie(string inputLine)
+        private void BuildTrie(string inputLine)
         {
             if(inputLine == string.Empty)
             {
@@ -37,9 +37,14 @@
                     var newCharacter = inputLine[j];
                     var newNode = new TrieNode(newCharacter);
 
-                    currentNode.AddNext(newNode);
-
-                    currentNode = newNode;
+                    if (currentNode.TryAddNext(newNode))
+                    {
+                        currentNode = newNode;
+                    }
+                    else
+                    {
+                        currentNode = currentNode.NextNodes[newCharacter];
+                    }
                 }
             }
         }
@@ -54,9 +59,9 @@
                 Character = character;
             }
 
-            internal void AddNext(TrieNode node)
+            internal bool TryAddNext(TrieNode node)
             {
-                NextNodes.TryAdd(node.Character, node);
+                return NextNodes.TryAdd(node.Character, node);
             }
         }
     }
