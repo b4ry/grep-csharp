@@ -64,6 +64,11 @@ namespace codecrafters_grep.src
 
         internal static void BuildPatternChunks(string pattern)
         {
+            if(pattern.Length == 0)
+            {
+                return;
+            }
+
             StringBuilder characterGroup = new();
 
             if (pattern[0] == '^')
